@@ -1,99 +1,114 @@
-README
-a. Full Name
-Shalin Shah
+# Git450: Distributed File Management System  
+**EE450 Socket Programming Project**  
+**Author:** Shalin Shah  
 
-b. Student ID
-3837311928
+---
 
-c. What I Have Done in the Assignment
+## ✅ Project Summary
+This project implements a simplified GitHub-like file management system using TCP and UDP sockets across a distributed client-server architecture.
 
-Implemented the required socket programming project using TCP and UDP communication between clients and servers as outlined in the assignment specifications.
-Completed the optional part: Log Functionality for retrieving and displaying user-specific logs of operations performed.
+**Key Features:**
+- Encrypted member authentication
+- Role-based access: Guest vs Member
+- File operations: `lookup`, `push`, `remove`, `deploy`
+- Bonus: `log` command for viewing operation history
 
-d. Code Files and Their Purpose
+---
 
-client.c:
-Implements the client-side application. This includes:
-Sending authentication requests to the main server (serverM).
-Sending commands (lookup, push, remove, deploy, log) to the main server.
-Receiving responses from serverM and displaying the results.
+## 📁 Code Structure
 
-serverM.c:
-Implements the main server:
-Handles client connections via TCP.
-Routes commands to appropriate backend servers (serverA, serverR, serverD) via UDP.
-Logs operations and forwards responses back to clients.
+### `client.c`
+- Implements the client-side interface
+- Handles authentication and user commands
+- Communicates with `serverM` over TCP
 
-serverA.c:
-Implements authentication services:
-Validates user credentials (username and encrypted password) against a members.txt file.
+### `serverM.c` (Main Server)
+- Receives client requests over TCP
+- Forwards them to backend servers over UDP
+- Maintains operation logs
 
-serverR.c
-Handles repository-related operations:
-Processes lookup, push, remove, and deploy commands.
-Maintains the file repository using filenames.txt.
+### `serverA.c` (Authentication Server)
+- Validates user credentials using `members.txt`
+- Supports a cyclic +3 encryption scheme for passwords
 
-serverD.c:
-Manages deployment functionality:
-Handles deployment of files from serverR.
-Stores deployment logs in deployed.txt.
+### `serverR.c` (Repository Server)
+- Processes `lookup`, `push`, `remove`, `deploy` operations
+- Manages `filenames.txt` for file tracking
 
-Makefile:
-Facilitates compilation of all code files and cleans up generated binaries.
+### `serverD.c` (Deployment Server)
+- Handles deployment requests
+- Writes deployed files to `deployed.txt`
 
-e. Format of All Messages Exchanged
+### `Makefile`
+- Builds all binaries with `make all`
+- Supports clean-up with `make clean`
 
-Between Client and ServerM (TCP)
-- Authentication: auth <username> <encrypted_password>
-	Response: auth_success or auth_failed
+---
 
-Commands:
+## 💬 Communication Protocols
 
-- Lookup: <username> lookup <target_username>
-	Response: <List of filenames> or "user not found".
-- Push: <username> push <filename>
-	Response: "confirm_overwrite" or "file pushed".
-- Remove: <username> remove <filename>
-	Response: "file removed" or "file not found".
-- Deploy: <username> deploy
-	Response: <List of deployed files> or "no files found".
-- Log: <username> log
-	Response: <List of operations performed> or "No operations have been logged".
+### Between `Client` and `serverM` (TCP)
 
-Between ServerM and Backend Servers (UDP):
+| Command        | Format                                 | Response                                 |
+|----------------|----------------------------------------|------------------------------------------|
+| **Auth**       | `auth <username> <password>`           | `auth_success`, `auth_failed`            |
+| **Lookup**     | `<username> lookup <target_user>`      | File list or `user not found`            |
+| **Push**       | `<username> push <filename>`           | `confirm_overwrite`, `file pushed`       |
+| **Remove**     | `<username> remove <filename>`         | `file removed`, `file not found`         |
+| **Deploy**     | `<username> deploy`                    | File list or `no files found`            |
+| **Log**        | `<username> log`                       | Operation list or `no logs found`        |
 
-- Authentication (to serverA): auth <username> <encrypted_password>
-	Response: "auth_success" or "auth_failed".
+### Between `serverM` and Backend Servers (UDP)
 
-Repository Commands (to serverR):
+#### Authentication (`serverA`)
+- `auth <username> <encrypted_password>` → `auth_success` / `auth_failed`
 
-- Lookup: <username> lookup <target_username>
-	Response: <List of filenames> or "user not found".
-- Push: <username> push <filename>
-	Response: "duplicate file" or "file pushed".
-- Remove: <username> remove <filename>
-	Response: file removed or file not found.
-- Deploy: <username> deploy <username>
-	Response: <List of filenames> or "user not found".
+#### Repository (`serverR`)
+- `lookup`, `push`, `remove`, `deploy` handled with username & filename context
 
-Deployment Commands (to serverD):
-- Deploy: <username> <List of filenames>
-	Response: "files deployed".
+#### Deployment (`serverD`)
+- `deploy <username> <filenames>` → `files deployed`
 
-g. Idiosyncrasies of the Project
+---
 
-Failure Conditions:
+## ⚙️ Project Behavior & Limitations
 
-If the members.txt, filenames.txt, or deployed.txt files are missing or corrupted, related functionalities will fail.
-The program does not handle concurrent modifications to repository files well (e.g., simultaneous push operations).
-The project assumes all filenames are unique for each user.
+### Assumptions
+- Backend servers are already running before client connects
+- Each user has one repository with unique filenames
+- Inputs must follow the correct command format
 
-Assumptions:
-The backend servers (serverA, serverR, serverD) are running and reachable.
-The client must use correct commands; malformed inputs may lead to undefined behavior.
-For "push" commands, the file is to be present in the directory if not it will not push the file to filenames.txt
+### Failure Conditions
+- Missing/corrupted input files (`members.txt`, `filenames.txt`, etc.)
+- No concurrency handling (e.g., simultaneous `push`)
+- Local file must exist before `push` is accepted
 
-h. Reused Code
+---
 
-To setup the TCP/UDP connection, code from the textbook "Beej’s Guide to Network Programming" was taken. All the remaining implementation and logic are original and developed based on the project specifications.
-All reused codes, the specific functions are commented within the source code with appropriate attributions.
+## 📚 Reused Code
+- **Socket boilerplate code** adapted from [Beej’s Guide to Network Programming](https://beej.us/guide/bgnet/)
+- All reused code is clearly attributed with comments in the source files
+
+---
+
+## 🛠️ Compilation & Usage
+
+```bash
+# Compile all executables
+make all
+
+# Start each component in separate terminals
+./serverM
+./serverA
+./serverR
+./serverD
+
+# Run a client
+./client <USERNAME> <PASSWORD>
+
+# Clean Up
+make clean
+
+# Clean up Zombie processes
+ps aux | grep <yourname>
+kill -9 <PID>
