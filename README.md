@@ -11,7 +11,7 @@ This project implements a simplified GitHub-like file management system using TC
 - Encrypted member authentication
 - Role-based access: Guest vs Member
 - File operations: `lookup`, `push`, `remove`, `deploy`
-- Bonus: `log` command for viewing operation history
+- `log` command for viewing operation history
 
 ---
 
