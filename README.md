@@ -77,7 +77,6 @@ This project implements a simplified GitHub-like file management system using TC
 - Backend servers are already running before client connects
 - Each user has one repository with unique filenames
 - Inputs must follow the correct command format
-- For "push" commands, the file is to be present in the directory if not it will not push the file to `filenames.txt`
 
 
 ### Failure Conditions
