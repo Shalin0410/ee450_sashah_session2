@@ -1,5 +1,5 @@
 # Git450: Distributed File Management System  
-**EE450 Socket Programming Project**  
+**Socket Programming Project**  
 **Author:** Shalin Shah  
 
 ---
